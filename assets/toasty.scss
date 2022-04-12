@@ -1,0 +1,21 @@
+.Vue-Toastification__toast--default {
+  background-color: #ffffff !important;
+  color: #6a93ee !important;
+  border-bottom: 2px solid #1864afa6;
+  .Vue-Toastification__close-button{
+    color: #1864afa6 !important;
+  }
+}
+
+.Vue-Toastification__toast{
+  padding: 17px 24px;
+}
+
+.Vue-Toastification__toast--success {
+  border-bottom: 2px solid #369039;
+}
+
+
+.Vue-Toastification__toast--error{
+  border-bottom: 2px solid #d73333;
+}
