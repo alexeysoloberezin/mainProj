@@ -1,4 +1,4 @@
-export default function ({store, redirect, route, $toast, from}) {
+export default function ({store, redirect, route, $toast, from, next}) {
   if (route.name === "auth-login" || route.name === "auth-register" || route.name === "auth-logout") {
     // skip middleware
     return

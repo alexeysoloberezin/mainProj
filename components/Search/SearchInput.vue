@@ -1,11 +1,12 @@
 <template>
-  <div class="search">
+  <div class="search" :style="{maxWidth: fullWidth ? '100%' : maxWidthProp + 'px'}">
     <v-icon color="#535252">
       mdi-magnify
     </v-icon>
-    <input :value="value"
-           @input="$emit('input', $event.target.value)"
-           placeholder="Search"
+    <input
+      :value="value"
+      placeholder="Search"
+      @input="$emit('input', $event.target.value)"
     >
   </div>
 </template>
@@ -13,7 +14,17 @@
 <script>
 export default {
   name: "SearchInput",
-  props: ['value'],
+  props: {
+    value: {
+      type: String,
+      default: ''
+    },
+    maxWidthProp: {
+      type: [Number, String],
+      default: 350
+    },
+    fullWidth: Boolean,
+  },
 }
 </script>
 
@@ -21,7 +32,6 @@ export default {
 .search {
   position: relative;
   background: #fff;
-  max-width: 350px;
   width: 100%;
   height: 36px;
   border-radius: 4px;

@@ -29,7 +29,7 @@ export default {
   ],
 
   router: {
-    middleware: '~/middleware/clientMiddleware'
+    middleware: ['clientMiddleware']
   },
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 @import './reset.scss';
 @import "variables";
 @import "toasty";
@@ -36,3 +36,14 @@ body,html, .v-application--wrap{
 .v-card{
   box-shadow: 0 2px 9px rgba(0, 0, 0, 0.03) !important;
 }
+
+.v-rating .v-icon{
+  padding: 0.5rem 0.2rem !important;
+}
+.fz14{
+  font-size: 14px;
+}
+.fz12{
+  font-size: 12px;
+}
+

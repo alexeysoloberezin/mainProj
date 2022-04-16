@@ -4,7 +4,7 @@
     <SidebarHOC/>
 
     <div class="container">
-      <Nuxt/>
+      <Nuxt></Nuxt>
     </div>
   </v-app>
 </template>
@@ -16,6 +16,5 @@ import SidebarHOC from "~/components/Sidebar/SidebarHOC";
 export default {
   name: 'DefaultLayout',
   components: {SidebarHOC, Header},
-
 }
 </script>

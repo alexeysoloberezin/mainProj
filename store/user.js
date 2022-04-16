@@ -6,6 +6,7 @@ export const state = () => ({
     name: ''
   },
   token: '',
+  users: [],
 })
 export const mutations = {
   user(state, val) {
@@ -13,6 +14,9 @@ export const mutations = {
   },
   userRole(state, val) {
     state.user.role = val;
+  },
+  users(state, val) {
+    state.users = val;
   },
 }
 
@@ -24,7 +28,21 @@ export const getters = {
 
 
 export const actions = {
-  getCategory({commit}) {
-
+  getInfo({commit}) {
+    this.$axios.get('/user/info/')
+      .then((res) => {
+        commit('user', res.data)
+      }).catch(() => {
+      this.$toast.error('Get info failed')
+    })
   },
+  getUsers({commit}) {
+    this.$axios.get('/user/all')
+      .then((res) => {
+        commit('users', res.data)
+      }).catch(() => {
+      this.$toast.error('Get users failed')
+    })
+  },
+
 }

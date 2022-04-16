@@ -27,7 +27,7 @@ export const mutations = {
 
 export const actions = {
   login({commit}, params) {
-    this.$axios.post('/user/login', {
+    return this.$axios.post('/user/login', {
       email: params.email,
       password: params.password
     }).then(res => {
@@ -37,13 +37,14 @@ export const actions = {
         return Promise.resolve()
       } else {
         this.$toast.error('Login error')
+        return Promise.reject(new Error('Login error'))
       }
     }).catch(({response}) => {
       this.$toast.error(response.data.message)
     })
   },
   register({commit}, params) {
-    this.$axios.post('/user/registration', {
+    return this.$axios.post('/user/registration', {
       email: params.email,
       password: params.password
     }).then(res => {
@@ -53,19 +54,21 @@ export const actions = {
         return Promise.resolve()
       } else {
         this.$toast.error('Login error')
+        return Promise.reject(new Error('Login error'))
       }
     }).catch(({response}) => {
       this.$toast.error(response.data.message)
     })
   },
   check({commit}, params) {
-    this.$axios.get('/user/auth').then(res => {
+    return  this.$axios.get('/user/auth').then(res => {
       if (res.data.token) {
         commit('authToken', res.data.token)
         commit('role', res.data.role)
         return Promise.resolve()
       } else {
         this.$toast.error('Login error')
+        return Promise.reject(new Error('Login error'))
       }
     })
   },
