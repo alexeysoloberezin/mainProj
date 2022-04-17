@@ -22,6 +22,11 @@ export default {
           icon: 'mdi-message-processing-outline',
         },
         {
+          name: 'Users',
+          route: '/users',
+          icon: 'mdi-message-processing-outline',
+        },
+        {
           name: 'Subscriptions',
           route: '/subscriptions',
           icon: 'mdi-playlist-check',

@@ -15,24 +15,32 @@
     <div class="chat__wrapper">
       <div class="chat__rooms">
         <ChatUser
-          name="alex"
-          title="123123"
-          text="123123123123"
+          v-for="userItem in usersList"
+          :key="userItem.id"
+          :name="userItem.name || ''"
+          :title="userItem.name || ''"
+          class="px-3 hoverBg"
+          @click.native="goInRoom(userItem)"
         />
       </div>
       <div class="chat__main">
         <template v-if="connect">
-          <div class="chat__main-head px-3">
-            <ChatUser name="Alex" text="Alex" class="py-1 ma-0" no-border/>
+          <div v-if="activeUser" class="chat__main-head px-3">
+            <ChatUser
+              :name="activeUser.name || activeUser.email"
+              :text="activeUser.name || activeUser.email"
+              class="py-1 ma-0"
+              no-border
+              @click.native="$router.push('users/' + activeUser.id)"
+            />
           </div>
           <div class="chat__chat">
             <ChatMessage
               v-for="message in messages"
               :key="message.id"
               :text="message.message"
-              :date="message.date"
-              :event="message.event"
-              :user="message.username"
+              event="message"
+              :date="message.createdAt"
             />
           </div>
           <div class="chat__main-textArea">
@@ -50,7 +58,6 @@
 </template>
 
 <script>
-import {v4 as uuidv4} from 'uuid'
 import SearchInput from "@/components/Search/SearchInput";
 import ChatSidebar from "@/components/Cart/ChatSidebar";
 import ClientModal from "@/components/Modals/ClientModal";
@@ -62,60 +69,140 @@ export default {
   components: {ChatMessage, ChatUser, ClientModal, ChatSidebar, SearchInput},
   data() {
     return {
+      activeUser: null,
+      roomId: '',
       connect: false,
-      socket: null,
       openSidebar: false,
       clientModal: false,
       chatInput: '',
-      messages: []
+      messages: [],
+      usersList: [],
     }
   },
-  created() {
+  mounted() {
+    if (this.$store.state.chat.activeUser) {
+      this.setPositionChatBottom()
+      this.getUserInfo(this.$store.state.chat.activeUser)
+    }
+
     this.$store.dispatch('user/getInfo')
-
-    this.socket = new WebSocket('ws://localhost:5555')
-
-    this.socket.onopen = () => {
-      this.connect = true
-      const message = {
-        event: 'connection',
-        username: 'Alex',
-        message: 'test',
-        id: uuidv4
-      }
-      this.socket.send(JSON.stringify(message))
+    this.getUsers()
+  },
+  watch: {
+    users() {
+      this.setChatUsers(this.users)
     }
-    this.socket.onmessage = (event) => {
-      console.log('even', event)
-      const message = JSON.parse(event.data)
+  },
+
+  sockets: {
+    disconnect() {
+      this.connect = false;
+    },
+
+    setChatUsers(chatUsers) {
+      this.usersList = chatUsers
+    },
+
+    roomUsers(users) {
+      console.log(users)
+    },
+
+    notification(data) {
+      console.log(data)
+    },
+    // Fired when the server sends something on the "messageChannel" channel.
+    message(message) {
       this.messages.push(message)
-    }
-    this.socket.onclose = () => {
-      this.connect = false
-      console.log('socket is close ')
-    }
-    this.socket.onerror = () => {
-      this.$toast.error('Chat connect Error')
-    }
+      setTimeout(() => {
+        this.setPositionChatBottom('slow')
+      }, 50)
+    },
   },
   computed: {
     userName() {
-        return this.$store.getters['user/userName']
+      return this.$store.getters['user/userName']
     },
     user() {
-      return this.$store.state.user
+      return this.$store.state.user.user
+    },
+    users() {
+      return this.$store.state.user.users
+    },
+    friends() {
+      return this.$store.state.friends.friends || []
     },
   },
   methods: {
+    setPositionChatBottom(type){
+      const chatDOM = document.querySelector('.chat__chat')
+      if (!chatDOM) return
+      if (type === 'slow') return chatDOM.scrollTo({top: chatDOM.scrollHeight,  behavior: "smooth"})
+      chatDOM.scrollTop = chatDOM.scrollHeight
+    },
+    setChatUsers(chatUsersArg) {
+      const chatUsers = chatUsersArg.map(item => {
+        return {
+          ...item,
+          room: this.user.id + "-" + item.id
+        }
+      })
+
+      this.$socket.emit('setChatUsers', {chatUsers})
+    },
+    getMessages(room) {
+      this.$store.dispatch('chat/getMessages', {room})
+        .then((messages) => {
+          this.messages = messages
+        }).finally(() => {
+        this.setPositionChatBottom()
+      })
+    },
+    addMessage(message, room, userId) {
+      return this.$store.dispatch('chat/addMessage', {
+        message, room, userId,
+      }).then((res) => {
+        return Promise.resolve(res)
+      }).catch(() => {
+        return Promise.reject(new Error('Add message error'))
+      })
+    },
+    getUserInfo(id) {
+      this.$store.dispatch('user/getInfo', {id})
+        .then(() => {
+          this.activeUser = this.$store.state.user.otherUser
+          this.goInRoom(this.activeUser)
+          this.connect = true
+        })
+    },
+    goInRoom(user) {
+      this.connect = true
+      this.messages = []
+      this.getMessages(this.user.id + "-" + user.id)
+
+      // room id generated ( myuserID - myfriendID )
+      this.$socket.emit('joinRoom', {
+        userName: this.user.name || this.user.email,
+        userId: this.user.id,
+        room: this.user.id + "-" + user.id
+      })
+      this.activeUser = user
+    },
+    getUsers() {
+      this.$store.dispatch('user/getUsers')
+    },
     submit() {
-      const message = {
-        event: 'message',
-        username: 'Alex',
+      if (!this.chatInput) return this.$toast('Input is empty')
+
+      const data = {
         message: this.chatInput,
-        id: uuidv4
+        room: this.user.id + "-" + this.activeUser.id,
+        userId: this.user.id,
       }
-      this.socket.send(JSON.stringify(message))
-      this.chatInput = ''
+
+      this.addMessage(data).then((message) => {
+        this.$socket.emit('message', message)
+        this.chatInput = ''
+      })
     },
     openClientModal() {
       this.clientModal = true
@@ -148,14 +235,15 @@ export default {
   }
 
   &__main {
+    position: relative;
     height: var(--minHeight);
-    overflow-y: auto;
     background: rgb(255 231 199 / 50%);
     width: 65%;
 
     &-head, &-textArea {
-      position: sticky;
+      position: absolute;
       z-index: 3;
+      width: 100%;
       background: $bg3;
       box-shadow: 0 0 4px rgba(0, 0, 0, 0.02);
     }
@@ -183,15 +271,15 @@ export default {
   }
 
   &__chat {
-    height: calc(var(--minHeight) - 110px);
-    padding: 20px;
+    height: calc(var(--minHeight));
+    padding: 70px 20px 70px 20px;
+    overflow-y: auto;
   }
 
   &__message {
     width: fit-content;
     font-size: 14px;
     margin-bottom: 12px;
-
     &-text {
       background: rgba($main, .4);
       padding: 4px 15px;
@@ -206,22 +294,30 @@ export default {
 
     &.notIm {
       margin-left: auto;
-
       time {
         display: flex;
         justify-content: flex-end;
+      }
+      .chat__message-text{
+        margin-left: auto;
       }
     }
   }
 
   &__user {
+    cursor: pointer;
     display: flex;
     align-items: center;
     width: 100%;
     overflow: hidden;
     border-bottom: 1px solid $borderColor;
-    padding-bottom: 10px;
-    margin-bottom: 10px;
+    padding: 10px 0;
+    border-radius: 10px;
+    transition: .2s;
+
+    &.hoverBg:hover {
+      background: rgba(0, 0, 0, 0.06);
+    }
 
     &-text, &-title {
       white-space: nowrap;

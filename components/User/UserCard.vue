@@ -1,8 +1,5 @@
 <template>
   <div class="user">
-<!--    <div>-->
-<!--      {{ role === 'ADMIN' ? 'ADMIN' : '' }}-->
-<!--    </div>-->
     <div class="user-head">
       <AvatarBlock
         class="mr-4 user-ava"
@@ -51,7 +48,7 @@
       >
         Add as Friend
       </v-btn>
-      <v-btn color="teal" outlined small dark>
+      <v-btn color="teal" outlined small dark @click="sendMessage(id)">
         Send message
       </v-btn>
     </div>
@@ -110,6 +107,10 @@ export default {
         .then(() => {
           this.$emit('getUsers')
         })
+    },
+    sendMessage(id){
+      this.$store.commit('chat/activeUser', id)
+      this.$router.push('/messages')
     },
     getIcon(status){
       switch (status) {

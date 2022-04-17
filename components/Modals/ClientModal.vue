@@ -11,7 +11,7 @@
         <div v-if="friends">
           <div
             v-for="friend in friends"
-            :key="friend"
+            :key="friend.user.id"
           >
             <ChatUser
               :name="friend.user.name || friend.user.email"

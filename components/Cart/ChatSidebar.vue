@@ -54,7 +54,7 @@ export default {
   data(){
       return {
         sidebarItems: [
-          {title: 'Contacts', icon: 'mdi-account-multiple', handler: () => this.openContacts()}
+          {title: 'My contacts', icon: 'mdi-account-multiple', handler: () => this.openContacts()}
         ]
       }
   },

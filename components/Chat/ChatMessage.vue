@@ -5,7 +5,7 @@
         {{ text }}
       </div>
       <time class="chat__message-date">
-        {{ date }}
+        {{ chatTime(date) }}
       </time>
     </div>
     <div v-else-if="event === 'connection'">
@@ -15,6 +15,8 @@
 </template>
 
 <script>
+import {chatTime} from "@/helpers/date/chatTime";
+
 export default {
   name: "ChatMessage",
   props: {
@@ -35,6 +37,11 @@ export default {
       default: ''
     },
     fromI: Boolean,
+  },
+  methods: {
+    chatTime(date){
+      return chatTime(date)
+    }
   }
 }
 </script>
